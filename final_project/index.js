@@ -15,6 +15,7 @@ app.use("/customer",session({
     saveUninitialized: true
 }));
 
+//middleware to check if the user is authenticated
 app.use("/customer/auth/*", function auth(req,res,next){
     // Check if user is logged in and has valid access token
     if (req.session.authorization) {
