@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios')
 let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
@@ -18,8 +19,28 @@ public_users.post("/register", (req,res) => {
   }
 });
 
-// Get the book list available in the shop
-public_users.get("/", (req,res) => {
+//get the books from the server using axios
+public_users.get("/booksAxios", async (req, res) => {
+  try {
+    //get the books from the server
+    const response = await axios.get('http://localhost:5000/books');
+    //check if the response is not empty
+    if (response.data && Object.keys(response.data).length) {
+      //return the books
+      return res.send(JSON.stringify(response.data, null, 4));
+    } else {
+      //if the response is empty, return a message saying no books are available
+      return res.send("No books are available");
+    }
+    //if there is an error, return a message saying error fetching books
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    return res.status(500).json({message: "Error fetching books"});
+  }
+});
+
+//get the books from the server using the books object
+public_users.get("/books", (req,res) => {
   //check if there are any books
   if (Object.keys(books).length) {
     //return the books
@@ -30,8 +51,32 @@ public_users.get("/", (req,res) => {
   }
 });
 
+public_users.get("/booksAxios/isbn/:isbn", async (req, res) => {
+  try {
+    const response = await axios.get('http://localhost:5000/books');
+    //check if the response is not empty
+    if (response.data && Object.keys(response.data).length) {
+      //find the book with the ISBN
+      const book = response.data.find(book => book.isbn === req.params.isbn); 
+      //check if the book exists
+      if (book) {
+        //return the book
+        return res.send(JSON.stringify(book, null, 4));
+        //if the book does not exist, return a message saying no book found with ISBN
+      } else {
+        return res.send("No book found with ISBN: " + req.params.isbn);
+      }
+    } else {
+      return res.send("No books are available");
+    }
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    return res.status(500).json({message: "Error fetching books"});
+  }
+})
+
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
+public_users.get('/books/isbn/:isbn',function (req, res) {
   //get the isbn from the request params
   const isbn = req.params.isbn;
   //check if the book exists
@@ -45,7 +90,7 @@ public_users.get('/isbn/:isbn',function (req, res) {
  });
   
 // Get book details based on author
-public_users.get('/author/:author', function (req, res) {
+public_users.get('/books/author/:author', function (req, res) {
   //get the author from the request params
   const author = req.params.author.toLowerCase();
   //convert books object to array
@@ -64,7 +109,7 @@ public_users.get('/author/:author', function (req, res) {
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
+public_users.get('/books/title/:title',function (req, res) {
   const title = req.params.title.toLowerCase();
   //convert books object to array
   const allBooks = Object.values(books);
@@ -82,7 +127,7 @@ public_users.get('/title/:title',function (req, res) {
 });
 
 //  Get book review
-public_users.get('/review/:isbn',function (req, res) {
+public_users.get('/books/review/:isbn',function (req, res) {
   //get the isbn from the request params
   const isbn = req.params.isbn;
   //check if the book exists
