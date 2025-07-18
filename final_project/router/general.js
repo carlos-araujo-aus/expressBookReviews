@@ -52,28 +52,32 @@ public_users.get("/books", (req,res) => {
 });
 
 public_users.get("/booksAxios/isbn/:isbn", async (req, res) => {
+  //try to get the books from the server
   try {
+    //get the books from the server
     const response = await axios.get('http://localhost:5000/books');
     //check if the response is not empty
     if (response.data && Object.keys(response.data).length) {
       //find the book with the ISBN
-      const book = response.data.find(book => book.isbn === req.params.isbn); 
+      const book = response.data[req.params.isbn];
       //check if the book exists
-      if (book) {
+      if (book) { 
         //return the book
         return res.send(JSON.stringify(book, null, 4));
-        //if the book does not exist, return a message saying no book found with ISBN
       } else {
+        //if the book does not exist, return a message saying no book found with ISBN
         return res.send("No book found with ISBN: " + req.params.isbn);
       }
     } else {
+      //if the response is empty, return a message saying no books are available
       return res.send("No books are available");
     }
+    //if there is an error, return a message saying error fetching books
   } catch (error) {
     console.error('Error fetching books:', error);
     return res.status(500).json({message: "Error fetching books"});
   }
-})
+});
 
 // Get book details based on ISBN
 public_users.get('/books/isbn/:isbn',function (req, res) {
@@ -88,6 +92,41 @@ public_users.get('/books/isbn/:isbn',function (req, res) {
     return res.send("No book found with ISBN: " + isbn);
   }
  });
+
+//get the books from the server using axios and the author
+public_users.get("/booksAxios/author/:author", async (req, res) => {
+  //try to get the books from the server
+  try {
+    //get the books from the server
+    const response = await axios.get('http://localhost:5000/books')
+    //check if the response is not empty
+    if (response.data && Object.keys(response.data).length) {
+      //get the author from the request params
+      const author = req.params.author.toLowerCase()
+      //convert books object to array
+      const allBooks = Object.values(response.data)
+      //filter the books by author
+      const booksByAuthor = allBooks.filter(book => 
+        book.author.toLowerCase().includes(author)
+      )
+      //check if the books by author is not empty
+      if (booksByAuthor.length > 0) {
+        //return the books by author
+        return res.send(JSON.stringify(booksByAuthor, null, 4))
+      } else {
+        //if the books by author is empty, return a message saying no books found by author
+        return res.send("No books found by author: " + req.params.author)
+      }
+    } else {
+      //if the response is empty, return a message saying no books are available
+      return res.send("No books are available")
+    }
+    //if there is an error, return a message saying error fetching books
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    return res.status(500).json({message: "Error fetching books"});
+  }
+})
   
 // Get book details based on author
 public_users.get('/books/author/:author', function (req, res) {
@@ -107,6 +146,41 @@ public_users.get('/books/author/:author', function (req, res) {
     return res.send("No books found by author: " + req.params.author);
   }
 });
+
+//get the books from the server using axios and the title
+public_users.get("/booksAxios/title/:title", async (req, res) => {
+  //try to get the books from the server
+  try {
+    //get the books from the server
+    const response = await axios.get('http://localhost:5000/books')
+    //check if the response is not empty
+    if (response.data && Object.keys(response.data).length) {
+      //get the title from the request params
+      const title = req.params.title.toLowerCase()
+      //convert books object to array
+      const allBooks = Object.values(response.data)
+      //filter the books by title
+      const booksByTitle = allBooks.filter(book => 
+        book.title.toLowerCase().includes(title)
+      )
+      //check if the books by title is not empty
+      if (booksByTitle.length > 0) {
+        //return the books by title
+        return res.send(JSON.stringify(booksByTitle, null, 4))
+      } else {
+        //if the books by title is empty, return a message saying no books found by title
+        return res.send("No books found by title: " + req.params.title)
+      }
+    } else {
+      //if the response is empty, return a message saying no books are available
+      return res.send("No books are available")
+    }
+    //if there is an error, return a message saying error fetching books
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    return res.status(500).json({message: "Error fetching books"});
+  }
+})
 
 // Get all books based on title
 public_users.get('/books/title/:title',function (req, res) {
